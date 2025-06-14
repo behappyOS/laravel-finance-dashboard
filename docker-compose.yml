@@ -1,0 +1,44 @@
+services:
+  app:
+    image: felizrar/laravel:latest
+    container_name: laravel_app
+    volumes:
+      - .:/var/www
+    depends_on:
+      - db
+    networks:
+      - laravel
+
+  nginx:
+    image: felizrar/nginx-laravel:latest
+    container_name: nginx_laravel
+    ports:
+      - "8000:80"
+    volumes:
+      - .:/var/www
+    depends_on:
+      - app
+    networks:
+      - laravel
+
+  db:
+    image: felizrar/mysql-laravel:latest
+    container_name: mysql_laravel
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: laravel
+      MYSQL_USER: laravel
+      MYSQL_PASSWORD: secret
+    volumes:
+      - dbdata:/var/lib/mysql
+    networks:
+      - laravel
+
+volumes:
+  dbdata:
+
+networks:
+  laravel:
+    driver: bridge
