@@ -7,7 +7,7 @@ export default function DashboardPage() {
     const { logout } = useAuth();
 
     useEffect(() => {
-        api.get('/accounts')
+        api.get('/api/accounts')
             .then(res => setAccounts(res.data))
             .catch(err => {
                 if (err.response.status === 401) {
