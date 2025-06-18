@@ -17,17 +17,17 @@ export function AuthProvider({ children }) {
 
     useEffect(() => {
         const init = async () => {
+            axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
             if (!token) {
                 setUser(null);
                 return;
             }
 
-            axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
             setLoading(true);
 
             try {
                 const res = await axios.get('/api/user');
-                console.log('User fetched:', res.data);
 
                 setUser(res.data.user);
                 setLoading(false);
@@ -38,7 +38,6 @@ export function AuthProvider({ children }) {
                 }
 
             } catch (err) {
-                console.error('Erro ao buscar usuário:', err);
                 logout();
             }
         };
@@ -49,7 +48,6 @@ export function AuthProvider({ children }) {
     const fetchUser = async () => {
         try {
             const res = await axios.get('/api/user');
-            console.log('User fetched:', res.data);
 
             setUser(res.data.user);
 
@@ -59,7 +57,6 @@ export function AuthProvider({ children }) {
                 axios.defaults.headers.common['Authorization'] = `Bearer ${res.data.currentToken}`;
             }
         } catch (error) {
-            console.error('Erro ao buscar usuário:', error);
             logout();
         }
     };
@@ -70,18 +67,16 @@ export function AuthProvider({ children }) {
         try {
             const response = await axios.post('/api/login', { email, password }, { withCredentials: true });
             const apiToken = response.data.access_token;
-            console.log('TOKEN:', apiToken);
+
             localStorage.setItem('authToken', apiToken);
+
+            axios.defaults.headers.common['Authorization'] = `Bearer ${apiToken}`;
+
             setToken(apiToken);
 
-            try {
-                await fetchUser();
-            } catch (e) {
-                console.error('Erro no fetchUser após login:', e);
-            }
+            await fetchUser();
 
             navigate('/dashboard');
-            setLoading(false);
         } catch (error) {
             setLoading(false);
             const msg = error.response?.data?.message || 'Falha no login';
