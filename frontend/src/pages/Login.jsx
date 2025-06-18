@@ -1,16 +1,28 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import reactLogo from '../assets/react.svg'; // salve a logo aqui ou use o link do CDN
+import { useNavigate } from 'react-router-dom';
+import reactLogo from '../assets/react.svg';
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
     const auth = useAuth();
+    const navigate = useNavigate();
 
-    const handleLogin = (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault();
+        setError('');
         if (email && password) {
-            auth.login(email, password);
+            try {
+                setLoading(true);
+                await auth.login(email, password, navigate);
+            } catch (err) {
+                setError('Email ou senha inválidos.');
+            } finally {
+                setLoading(false);
+            }
         }
     };
 
@@ -26,6 +38,11 @@ export default function LoginPage() {
                 <h2 className="text-3xl font-semibold text-center text-gray-800 dark:text-gray-100 mb-6">
                     Login
                 </h2>
+
+                {error && (
+                    <p className="text-red-600 mb-4 text-center font-semibold">{error}</p>
+                )}
+
                 <div className="mb-4">
                     <label className="block text-gray-700 dark:text-gray-300 mb-2" htmlFor="email">
                         Email
@@ -37,6 +54,7 @@ export default function LoginPage() {
                         onChange={(e) => setEmail(e.target.value)}
                         className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         required
+                        disabled={loading}
                     />
                 </div>
                 <div className="mb-6">
@@ -50,13 +68,19 @@ export default function LoginPage() {
                         onChange={(e) => setPassword(e.target.value)}
                         className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         required
+                        disabled={loading}
                     />
                 </div>
                 <button
                     type="submit"
-                    className="w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-300"
+                    disabled={loading}
+                    className={`w-full py-2 rounded-lg transition-colors duration-300 ${
+                        loading
+                            ? 'bg-blue-400 cursor-not-allowed'
+                            : 'bg-blue-600 hover:bg-blue-700 text-white'
+                    }`}
                 >
-                    Entrar
+                    {loading ? 'Entrando...' : 'Entrar'}
                 </button>
             </form>
         </div>

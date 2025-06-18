@@ -1,5 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import {
+    createBrowserRouter,
+    RouterProvider,
+    Navigate
+} from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 
 import LoginPage from './pages/Login';
@@ -15,22 +19,24 @@ const PrivateRoute = ({ children }) => {
     return user ? children : <Navigate to="/login" />;
 };
 
-function AppRoutes() {
-    return (
-        <Routes>
-            <Route path="/login" element={<LoginPage />} />
-            <Route
-                path="/dashboard"
-                element={
-                    <PrivateRoute>
-                        <DashboardPage />
-                    </PrivateRoute>
-                }
-            />
-            <Route path="*" element={<Navigate to="/dashboard" />} />
-        </Routes>
-    );
-}
+const router = createBrowserRouter([
+    {
+        path: '/login',
+        element: <LoginPage />,
+    },
+    {
+        path: '/dashboard',
+        element: (
+            <PrivateRoute>
+                <DashboardPage />
+            </PrivateRoute>
+        ),
+    },
+    {
+        path: '*',
+        element: <Navigate to="/dashboard" />,
+    },
+]);
 
 function App() {
     const [darkMode, setDarkMode] = useState(() => {
@@ -48,20 +54,24 @@ function App() {
     }, [darkMode]);
 
     return (
-        <BrowserRouter>
-            <AuthProvider>
-                <div className="absolute top-4 right-4 z-50">
-                    <button
-                        onClick={() => setDarkMode(!darkMode)}
-                        className="px-3 py-2 rounded-md bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-700 transition"
-                    >
-                        {darkMode ? '☀️ Claro' : '🌙 Escuro'}
-                    </button>
-                </div>
+        <AuthProvider>
+            <div className="absolute top-4 right-4 z-50">
+                <button
+                    onClick={() => setDarkMode(!darkMode)}
+                    className="px-3 py-2 rounded-md bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-700 transition"
+                >
+                    {darkMode ? '☀️ Claro' : '🌙 Escuro'}
+                </button>
+            </div>
 
-                <AppRoutes />
-            </AuthProvider>
-        </BrowserRouter>
+            <RouterProvider
+                router={router}
+                future={{
+                    v7_startTransition: true,
+                    v7_relativeSplatPath: true
+                }}
+            />
+        </AuthProvider>
     );
 }
 

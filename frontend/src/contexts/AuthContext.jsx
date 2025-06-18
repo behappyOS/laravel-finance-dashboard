@@ -1,61 +1,108 @@
-import React, { useState, useEffect, createContext, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
-import api from '../services/api';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import axios from 'axios';
 
-const AuthContext = createContext(null);
+axios.defaults.baseURL = 'http://localhost:8000';
+axios.defaults.withCredentials = true;
 
-export const AuthProvider = ({ children }) => {
+const AuthContext = createContext();
+
+export function useAuth() {
+    return useContext(AuthContext);
+}
+
+export function AuthProvider({ children }) {
+    const [token, setToken] = useState(() => localStorage.getItem('authToken'));
     const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const navigate = useNavigate();
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        const token = localStorage.getItem('authToken');
-        if (token) {
-            api.get('/user')
-                .then(response => {
-                    setUser(response.data);
-                })
-                .catch(() => {
-                    // Token inválido, limpa
-                    localStorage.removeItem('authToken');
-                })
-                .finally(() => {
-                    setLoading(false);
-                });
-        } else {
-            setLoading(false);
-        }
-    }, []);
+        const init = async () => {
+            if (!token) {
+                setUser(null);
+                return;
+            }
 
-    const login = async (email, password) => {
+            axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+            setLoading(true);
+
+            try {
+                const res = await axios.get('/api/user');
+                console.log('User fetched:', res.data);
+
+                setUser(res.data.user);
+                setLoading(false);
+
+                if (res.data.currentToken && res.data.currentToken !== token) {
+                    localStorage.setItem('authToken', res.data.currentToken);
+                    setToken(res.data.currentToken);
+                }
+
+            } catch (err) {
+                console.error('Erro ao buscar usuário:', err);
+                logout();
+            }
+        };
+
+        init();
+    }, [token]);
+
+    const fetchUser = async () => {
         try {
-            const response = await api.post('/login', { email, password });
-            const { token, user } = response.data; // Supondo que a API retorna token e user
+            const res = await axios.get('/api/user');
+            console.log('User fetched:', res.data);
 
-            localStorage.setItem('authToken', token);
-            setUser(user);
+            setUser(res.data.user);
+
+            if (res.data.currentToken && res.data.currentToken !== token) {
+                localStorage.setItem('authToken', res.data.currentToken);
+                setToken(res.data.currentToken);
+                axios.defaults.headers.common['Authorization'] = `Bearer ${res.data.currentToken}`;
+            }
+        } catch (error) {
+            console.error('Erro ao buscar usuário:', error);
+            logout();
+        }
+    };
+
+
+    const login = async (email, password, navigate) => {
+        setLoading(true);
+        try {
+            const response = await axios.post('/api/login', { email, password }, { withCredentials: true });
+            const apiToken = response.data.access_token;
+            console.log('TOKEN:', apiToken);
+            localStorage.setItem('authToken', apiToken);
+            setToken(apiToken);
+
+            try {
+                await fetchUser();
+            } catch (e) {
+                console.error('Erro no fetchUser após login:', e);
+            }
 
             navigate('/dashboard');
+            setLoading(false);
         } catch (error) {
-            console.error("Falha no login:", error);
-            alert('Email ou senha inválidos!');
+            setLoading(false);
+            const msg = error.response?.data?.message || 'Falha no login';
+            console.error('Erro no login:', error);
+            throw new Error(msg);
         }
     };
 
     const logout = () => {
-        api.post('/logout').finally(() => {
-            setUser(null);
-            localStorage.removeItem('authToken');
-            navigate('/login');
-        });
+        localStorage.removeItem('authToken');
+        setToken(null);
+        setUser(null);
     };
 
-    const value = { user, loading, login, logout };
+    const value = {
+        user,
+        token,
+        login,
+        logout,
+        loading,
+    };
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-};
-
-export const useAuth = () => {
-    return useContext(AuthContext);
-};
+}
