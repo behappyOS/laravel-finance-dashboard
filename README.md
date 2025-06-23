@@ -1,61 +1,128 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 💰 Laravel Finance Dashboard
+Um sistema de gestão financeira construído com Laravel 11 (backend) e React + Vite (frontend), utilizando Sanctum para autenticação e Docker para contêinerização.
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+## 📦 Tecnologias Utilizadas 
 
-## About Laravel
+Backend (API)
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- Laravel 11
+- Laravel Sanctum
+- MySQL
+- Docker
+- RESTful API
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+Frontend
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- React 18
+- Vite
+- Axios
+- TailwindCSS
+- React Router DOM
+- Context API
 
-## Learning Laravel
+DevOps
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- Docker
+- Docker Compose
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## 🚀 Como Rodar o Projeto
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+Pré-requisitos
 
-## Laravel Sponsors
+- Docker + Docker Compose
+- Make (opcional, para simplificar comandos)
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+1. Clone o Repositório
+   ```bash
+   git clone https://github.com/behappyOS/laravel-finance-dashboard.git
+   cd laravel-finance-dashboard
+   ````
+2. Suba os containers
+   ```bash
+   docker compose up -d
+   ````
+   Isso irá subir os serviços app (Laravel), db (MySQL), nginx (proxy) e frontend (React).
+    
 
-### Premium Partners
+3. Instale as dependências Laravel
+   
+Acesse o container:
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+```bash
+docker exec -it laravel_app bash
+````
+Dentro do container:
 
-## Contributing
+```bash
+composer install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate --seed
+````
+4. Instale as dependências do React
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Acesse o container React:
 
-## Code of Conduct
+```bash
+docker exec -it react_frontend bash
+````
+Dentro do container:
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```bash
+npm install
+npm run dev
+````
 
-## Security Vulnerabilities
+## 🔑 Rotas de Autenticação
+Laravel Sanctum com autenticação via token:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+- POST /api/register
+- POST /api/login
+- GET /api/user (Requer token Bearer)
+- POST /api/logout (Requer token Bearer)
 
-## License
+## 🧪 Testando a API via Postman
+1. Registre um usuário via /api/register
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+2. Faça login e receba o token.
+
+3. Use o token como Bearer Token nas requisições autenticadas (ex: /api/user, /api/accounts)
+
+## 📂 Estrutura de Pastas
+```bash
+laravel-finance-dashboard/
+├── backend/              # Código Laravel (default: /var/www)
+├── frontend/             # Projeto React com Vite
+├── docker-compose.yml
+└── ...
+````
+
+## 🐳 Docker Services
+```bash
+Serviço	        Porta Externa	  Container
+Laravel API	8000	              laravel_app
+React Front	5173	              react_frontend
+Nginx	        80 (interno)	      nginx_laravel
+MySQL	        3306	              mysql_laravel
+````
+
+## ✅ Funcionalidades
+
+- Autenticação JWT (via Sanctum)
+- Listagem e gerenciamento de contas
+- Login com persistência de token
+- Layout responsivo com Tailwind
+- Dark/Light Theme Toggle
+- Proteção de rotas com React Router + Context API
+
+## 🛠️ Em Desenvolvimento
+
+- Integração com categorias e transações
+- Dashboard de gráficos
+- Exportação de relatórios
+
+## 🤝 Contribuições
+Pull Requests são bem-vindos! Sinta-se à vontade para abrir issues ou sugerir melhorias.
+
+## 📄 Licença
+Este projeto está licenciado sob a MIT License.
