@@ -84,7 +84,7 @@ Laravel Sanctum com autenticação via token:
 ## 🧪 Testando a API via Postman
 1. Registre um usuário via /api/register
 
-2. Faça login e receba o token.
+2. Faça login e receba o token
 
 3. Use o token como Bearer Token nas requisições autenticadas (ex: /api/user, /api/accounts)
 
